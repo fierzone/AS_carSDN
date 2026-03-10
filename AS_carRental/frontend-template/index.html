@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoRent - Car Listing</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="index.html"><i class="bi bi-car-front-fill me-2"></i>AutoRent</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center" id="nav-auth-area">
+                    <!-- Nav items will be injected automatically based on login state from js/api.js -->
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container py-5">
+        <div class="d-flex justify-content-between align-items-end mb-4">
+            <div>
+                <h1 class="fw-bold mb-1">Available Cars</h1>
+                <p class="text-muted">Find the perfect car for your next journey.</p>
+            </div>
+            <div>
+                <select class="form-select form-select-sm" style="width: auto;">
+                    <option>Sort by Price: Low to High</option>
+                    <option>Sort by Price: High to Low</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="row g-4" id="car-list-container">
+            <!-- Car cards will be injected here via JavaScript -->
+            <div class="col-12 text-center text-muted py-5">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p class="mt-2">Loading cars...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/api.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const container = document.getElementById('car-list-container');
+            try {
+                // Fetch Request to API
+                const data = await fetch('/api/cars').then(res => res.json());
+
+                if (Array.isArray(data)) {
+                    container.innerHTML = ''; // Clear loading spinner
+                    data.forEach(car => {
+                        const statusStr = (car.status || '').toLowerCase();
+                        const isAvailable = statusStr === 'available';
+                        const badgeClass = isAvailable ? 'bg-success' : (statusStr === 'rented' ? 'bg-danger' : 'bg-warning');
+                        const btnClass = isAvailable ? 'btn-primary' : 'btn-secondary disabled';
+                        const btnText = isAvailable ? 'Rent Now' : 'Not Available';
+                        const linkHref = isAvailable ? `car-detail.html?id=${car._id}` : '#';
+
+                        // Hỗ trợ cả model mới và data cũ từ seed.js
+                        const displayName = car.name || car.model || 'Unknown Car';
+                        const displayBrand = car.brand || 'Auto';
+                        const displayType = car.type || 'Car';
+                        const displayStatus = isAvailable ? 'Available' : (statusStr === 'rented' ? 'Rented' : car.status);
+
+                        const html = `
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card car-card h-100">
+                                <img src="${(car.image && car.image.startsWith('http')) ? car.image : 'https://images.unsplash.com/photo-1550355291-bbee04a92027?auto=format&fit=crop&q=80&w=800'}" class="card-img-top" alt="${displayName}">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h5 class="car-title mb-0">${displayName}</h5>
+                                            <small class="text-muted">${displayBrand} &bull; ${displayType}</small>
+                                        </div>
+                                        <span class="badge ${badgeClass} rounded-pill">${displayStatus}</span>
+                                    </div>
+                                    <ul class="list-unstyled text-muted small mb-3">
+                                        ${car.features.map(f => `<li><i class="bi bi-check-circle me-2"></i>${f}</li>`).join('')}
+                                    </ul>
+                                    <div class="d-flex justify-content-between align-items-center mt-3">
+                                        <div class="car-price">${formatCurrency(car.pricePerDay)} <span class="text-muted fs-6 fw-normal">/ day</span></div>
+                                        <a href="${linkHref}" class="btn ${btnClass}">${btnText}</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        `;
+                        container.insertAdjacentHTML('beforeend', html);
+                    });
+                } else {
+                    container.innerHTML = '<div class="col-12 text-center text-danger">Failed to load cars. Start DB and refresh</div>';
+                }
+            } catch (err) {
+                container.innerHTML = `<div class="col-12 text-center text-danger">Failed to connect to backend: ${err.message}. Are you sure 'node server.js' is running?</div>`;
+            }
+        });
+    </script>
+</body>
+
+</html>
