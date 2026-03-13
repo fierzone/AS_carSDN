@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoRent - Admin Premium Dashboard</title>
+    <!-- CSS Dependencies -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        :root {
+            --sidebar-width: 260px;
+            --top-navbar-height: 70px;
+            --primary-gradient: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        }
+
+        body {
+            background-color: #f3f4f6;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            background: #1e1e2d;
+            color: #a2a3b7;
+            z-index: 1000;
+            transition: all 0.3s;
+        }
+
+        .sidebar-brand {
+            height: var(--top-navbar-height);
+            display: flex;
+            align-items: center;
+            padding: 0 25px;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 800;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .sidebar-menu {
+            padding: 20px 0;
+        }
+
+        .nav-item-custom {
+            padding: 12px 25px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item-custom:hover,
+        .nav-item-custom.active {
+            color: white;
+            background: rgba(255, 255, 255, 0.05);
+            border-left-color: #4f46e5;
+        }
+
+        .nav-item-custom i {
+            margin-right: 15px;
+            font-size: 1.2rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            width: calc(100% - var(--sidebar-width));
+            min-height: 100vh;
+            transition: all 0.3s;
+        }
+
+        .top-navbar {
+            height: var(--top-navbar-height);
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            box-shadow: 0 1px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .page-body {
+            padding: 30px;
+        }
+
+        /* Cards */
+        .stat-card {
+            background: white;
+            border: none;
+            border-radius: 12px;
+            padding: 18px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            height: 100%;
+        }
+
+        .icon-box {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            margin-bottom: 12px;
+        }
+
+        .icon-blue {
+            background: rgba(79, 70, 229, 0.1);
+            color: #4f46e5;
+        }
+
+        .icon-green {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        .icon-orange {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+        }
+
+        .icon-red {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        .table-custom {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .table-custom thead th {
+            background-color: #f9fafb;
+            color: #4b5563;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            padding: 1rem;
+        }
+
+        .badge-status {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.75rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .sidebar {
+                left: -var(--sidebar-width);
+            }
+
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+            }
+
+            .sidebar.show {
+                left: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <i class="bi bi-car-front-fill me-2 text-primary"></i> AutoRent Admin
+        </div>
+        <div class="sidebar-menu">
+            <div class="nav-item-custom active" onclick="switchTab('dashboard', this)">
+                <i class="bi bi-grid-fill"></i> Dashboard
+            </div>
+            <div class="nav-item-custom" onclick="switchTab('cars', this)">
+                <i class="bi bi-car-front"></i> Manage Cars
+            </div>
+            <div class="nav-item-custom" onclick="switchTab('bookings', this)">
+                <i class="bi bi-calendar-check"></i> Bookings
+            </div>
+            <div class="nav-item-custom" onclick="switchTab('users', this)">
+                <i class="bi bi-people"></i> Users
+            </div>
+            <hr class="mx-4 my-4 opacity-10">
+            <div class="nav-item-custom text-danger" onclick="logout()">
+                <i class="bi bi-box-arrow-left"></i> Logout
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <header class="top-navbar">
+            <div class="d-flex align-items-center">
+                <button class="btn btn-sm d-lg-none me-3" onclick="toggleSidebar()"><i
+                        class="bi bi-list fs-4"></i></button>
+                <h4 class="fw-bold m-0" id="page-title">Dashboard Overview</h4>
+            </div>
+            <div class="d-flex align-items-center">
+                <div class="dropdown">
+                    <div class="d-flex align-items-center cursor-pointer" id="adminDropdown" data-bs-toggle="dropdown">
+                        <div class="text-end me-3 d-none d-sm-block">
+                            <p class="fw-bold m-0 lh-1" id="admin-name">Admin User</p>
+                            <small class="text-muted">Administrator</small>
+                        </div>
+                        <img src="https://ui-avatars.com/api/?name=Admin&background=4f46e5&color=fff"
+                            class="rounded-circle" width="40">
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="page-body">
+            <!-- DASHBOARD SECTION -->
+            <div id="section-dashboard" class="content-section">
+                <div class="row g-4 mb-4" id="stats-summary">
+                    <!-- Cards will be injected by JS -->
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-lg-8">
+                        <div class="stat-card">
+                            <h6 class="fw-bold mb-3 text-muted">Monthly Revenue</h6>
+                            <div style="height: 220px;">
+                                <canvas id="revenueChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="stat-card">
+                            <h6 class="fw-bold mb-3 text-muted">Best Selling</h6>
+                            <div id="top-cars-list">
+                                <!-- Top cars injected here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CARS SECTION -->
+            <div id="section-cars" class="content-section d-none">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-bold m-0 text-muted">Manage Fleet</h5>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#carModal"
+                        onclick="openCarModal('add')">
+                        <i class="bi bi-plus-lg me-1"></i> Add New Car
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-custom align-middle">
+                        <thead>
+                            <tr>
+                                <th>Car Details</th>
+                                <th>Brand/Type</th>
+                                <th>Price/Day</th>
+                                <th>Status</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cars-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- BOOKINGS SECTION -->
+            <div id="section-bookings" class="content-section d-none">
+                <div class="mb-4">
+                    <h5 class="fw-bold m-0 text-muted">Rental Requests & Bookings</h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-custom align-middle">
+                        <thead>
+                            <tr>
+                                <th>Order info</th>
+                                <th>Car</th>
+                                <th>Duration</th>
+                                <th>Revenue</th>
+                                <th>Status</th>
+                                <th class="text-end">Management</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bookings-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- USERS SECTION -->
+            <div id="section-users" class="content-section d-none">
+                <div class="mb-4">
+                    <h5 class="fw-bold m-0 text-muted">User Directory</h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-custom align-middle">
+                        <thead>
+                            <tr>
+                                <th>Full Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Role</th>
+                                <th>Joined At</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <!-- Add/Edit Car Modal -->
+    <div class="modal fade" id="carModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content border-0 rounded-4 shadow">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold fs-4" id="carModalTitle">Car Information</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="carForm">
+                        <input type="hidden" id="carId">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Car Name</label>
+                                <input type="text" id="carName" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Brand</label>
+                                <input type="text" id="carBrand" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Type</label>
+                                <select id="carType" class="form-select">
+                                    <option>Sedan</option>
+                                    <option>SUV</option>
+                                    <option>Hatchback</option>
+                                    <option>Compact</option>
+                                    <option>Coupe</option>
+                                    <option>Luxury</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Car Number</label>
+                                <input type="text" id="carNumber" class="form-control">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Price per Day ($)</label>
+                                <input type="number" id="carPrice" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Initial Status</label>
+                                <select id="carStatus" class="form-select">
+                                    <option value="Available">Available</option>
+                                    <option value="Maintenance">Maintenance</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">Image URL</label>
+                                <input type="url" id="carImage" class="form-control" required>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">Features (Comma separated)</label>
+                                <input type="text" id="carFeatures" class="form-control"
+                                    placeholder="GPS, Automatic, Bluetooth">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">Description</label>
+                                <textarea id="carDescription" class="form-control" rows="2" required></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer border-top-0 pt-3 px-0">
+                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary px-4">Save Information</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JS Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="js/api.js"></script>
+    <script>
+        let cachedCars = [];
+        let revenueChart = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = JSON.parse(localStorage.getItem('user'));
+            if (!user || user.role !== 'admin') {
+                Swal.fire('Access Denied', 'Please login as an admin', 'error').then(() => {
+                    window.location.href = 'login.html';
+                });
+                return;
+            }
+            document.getElementById('admin-name').textContent = user.fullName;
+            loadDashboard();
+        });
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('show');
+        }
+
+        function switchTab(tab, element) {
+            document.querySelectorAll('.nav-item-custom').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+
+            document.querySelectorAll('.content-section').forEach(el => el.classList.add('d-none'));
+            document.getElementById(`section-${tab}`).classList.remove('d-none');
+
+            const titles = {
+                dashboard: 'Dashboard Overview',
+                cars: 'Manage Car Fleet',
+                bookings: 'Booking Management',
+                users: 'User List'
+            };
+            document.getElementById('page-title').textContent = titles[tab];
+
+            if (tab === 'dashboard') loadDashboard();
+            if (tab === 'cars') loadCars();
+            if (tab === 'bookings') loadBookings();
+            if (tab === 'users') loadUsers();
+
+            // Auto close sidebar on mobile
+            if (window.innerWidth < 992) toggleSidebar();
+        }
+
+        async function loadDashboard() {
+            try {
+                const stats = await authFetch('/api/stats');
+
+                // Summary Cards
+                const summaryContainer = document.getElementById('stats-summary');
+                summaryContainer.innerHTML = `
+                    <div class="col-md-3">
+                        <div class="stat-card d-flex align-items-center">
+                            <div class="icon-box icon-blue mb-0 me-3"><i class="bi bi-currency-dollar"></i></div>
+                            <div>
+                                <h5 class="fw-bold mb-0">${formatCurrency(stats.totalRevenue)}</h5>
+                                <p class="text-muted m-0 small">Total Revenue</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card d-flex align-items-center">
+                            <div class="icon-box icon-green mb-0 me-3"><i class="bi bi-graph-up-arrow"></i></div>
+                            <div>
+                                <h5 class="fw-bold mb-0">${formatCurrency(stats.currentMonthRevenue || 0)}</h5>
+                                <p class="text-muted m-0 small">This Month</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card d-flex align-items-center">
+                            <div class="icon-box icon-orange mb-0 me-3"><i class="bi bi-car-front"></i></div>
+                            <div>
+                                <h5 class="fw-bold mb-0">${stats.totalCars}</h5>
+                                <p class="text-muted m-0 small">Vehicles</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card d-flex align-items-center">
+                            <div class="icon-box icon-red mb-0 me-3"><i class="bi bi-people"></i></div>
+                            <div>
+                                <h5 class="fw-bold mb-0">${stats.totalUsers}</h5>
+                                <p class="text-muted m-0 small">Users</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+
+
+                // Chart
+                initChart(stats.monthlyRevenue);
+
+                // Top Cars
+                const topCarsList = document.getElementById('top-cars-list');
+                topCarsList.innerHTML = '';
+                stats.topCars.forEach(item => {
+                    topCarsList.innerHTML += `
+                        <div class="d-flex align-items-center mb-2">
+                            <img src="${item.car.image}" class="rounded me-2" style="width: 40px; height: 30px; object-fit: cover;">
+                            <div class="flex-grow-1 overflow-hidden">
+                                <p class="fw-bold m-0 small text-truncate">${item.car.name}</p>
+                                <small class="text-muted" style="font-size: 0.7rem;">${item.count} orders</small>
+                            </div>
+                            <span class="badge bg-light text-primary fw-bold" style="font-size: 0.65rem;">#${stats.topCars.indexOf(item) + 1}</span>
+                        </div>
+                    `;
+                });
+
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function initChart(data) {
+            const ctx = document.getElementById('revenueChart').getContext('2d');
+            const labels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            const values = Array(12).fill(0);
+            data.forEach(d => values[d._id - 1] = d.revenue);
+
+            if (revenueChart) revenueChart.destroy();
+
+            revenueChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Revenue ($)',
+                        data: values,
+                        backgroundColor: '#4f46e5',
+                        borderRadius: 4,
+                        maxBarThickness: 30
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { display: false }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        async function loadCars() {
+            const tbody = document.getElementById('cars-tbody');
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center py-5">Loading fleet...</td></tr>';
+            try {
+                cachedCars = await fetch('/api/cars').then(res => res.json());
+                tbody.innerHTML = '';
+                cachedCars.forEach(car => {
+                    const statusClass = car.status === 'Available' ? 'bg-success' : 'bg-danger';
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <img src="${car.image}" class="rounded me-3" style="width: 60px; height: 40px; object-fit: cover;">
+                                    <div>
+                                        <div class="fw-bold">${car.name}</div>
+                                        <small class="text-muted">No: ${car.carNumber || 'N/A'}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><div class="fw-semibold">${car.brand}</div><small class="text-muted">${car.type}</small></td>
+                            <td class="fw-bold text-primary">${formatCurrency(car.pricePerDay)}</td>
+                            <td><span class="badge ${statusClass} badge-status">${car.status}</span></td>
+                            <td class="text-end">
+                                <button class="btn btn-sm btn-outline-primary" onclick="openCarModal('edit', '${car._id}')"><i class="bi bi-pencil"></i></button>
+                                <button class="btn btn-sm btn-outline-danger ms-1" onclick="deleteCar('${car._id}')"><i class="bi bi-trash"></i></button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (err) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-danger text-center py-4">Error loading cars</td></tr>';
+            }
+        }
+
+        async function loadBookings() {
+            const tbody = document.getElementById('bookings-tbody');
+            try {
+                const bookings = await authFetch('/api/bookings');
+                tbody.innerHTML = '';
+                bookings.forEach(b => {
+                    const sDate = new Date(b.startDate).toLocaleDateString();
+                    const eDate = new Date(b.endDate).toLocaleDateString();
+                    const carName = b.car ? b.car.name : 'Unknown Car';
+
+                    let actions = '';
+                    let statusColor = 'bg-info';
+                    if (b.status === 'Pending') {
+                        statusColor = 'bg-warning text-dark';
+                        actions = `
+                            <button class="btn btn-sm btn-success px-3 me-1" onclick="updateStatus('${b._id}', 'Confirmed')">Accept</button>
+                            <button class="btn btn-sm btn-danger px-3" onclick="updateStatus('${b._id}', 'Rejected')">Reject</button>
+                        `;
+                    } else if (b.status === 'Rejected' || b.status === 'Cancelled') {
+                        statusColor = 'bg-secondary';
+                    } else if (b.status === 'Confirmed') {
+                        statusColor = 'bg-success';
+                        actions = `<button class="btn btn-sm btn-outline-primary" onclick="updateStatus('${b._id}', 'Completed')">Mark Completed</button>`;
+                    }
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>
+                                <div class="fw-bold">${b.user ? b.user.fullName : 'Guest'}</div>
+                                <small class="text-muted">${b.user ? b.user.email : ''}</small>
+                            </td>
+                            <td class="fw-semibold">${carName}</td>
+                            <td><small>${sDate} - ${eDate}</small></td>
+                            <td class="fw-bold text-success">${formatCurrency(b.totalAmount)}</td>
+                            <td><span class="badge ${statusColor} badge-status">${b.status}</span></td>
+                            <td class="text-end">${actions}</td>
+                        </tr>
+                    `;
+                });
+            } catch (err) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-danger">Error loading bookings</td></tr>';
+            }
+        }
+
+        async function loadUsers() {
+            const tbody = document.getElementById('users-tbody');
+            try {
+                const users = await authFetch('/api/users');
+                tbody.innerHTML = '';
+                users.forEach(u => {
+                    const date = new Date(u.createdAt).toLocaleDateString();
+                    tbody.innerHTML += `
+                        <tr>
+                            <td class="fw-bold">${u.fullName}</td>
+                            <td>${u.email}</td>
+                            <td>${u.phone}</td>
+                            <td><span class="badge ${u.role === 'admin' ? 'bg-primary' : 'bg-light text-dark'}">${u.role}</span></td>
+                            <td>${date}</td>
+                        </tr>
+                    `;
+                });
+            } catch (err) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-danger">Error loading users</td></tr>';
+            }
+        }
+
+        async function updateStatus(id, newStatus) {
+            try {
+                await authFetch(`/api/bookings/${id}/status`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ status: newStatus })
+                });
+                Swal.fire('Success', `Booking marked as ${newStatus}`, 'success');
+                loadBookings();
+                loadDashboard();
+            } catch (err) {
+                Swal.fire('Error', err.message, 'error');
+            }
+        }
+
+        function openCarModal(mode, carId = null) {
+            document.getElementById('carForm').reset();
+            document.getElementById('carId').value = '';
+            document.getElementById('carModalTitle').textContent = mode === 'add' ? 'Add New Car' : 'Edit Car Details';
+
+            if (mode === 'edit' && carId) {
+                const car = cachedCars.find(c => c._id === carId);
+                if (car) {
+                    document.getElementById('carId').value = car._id;
+                    document.getElementById('carName').value = car.name;
+                    document.getElementById('carBrand').value = car.brand;
+                    document.getElementById('carType').value = car.type;
+                    document.getElementById('carNumber').value = car.carNumber || '';
+                    document.getElementById('carPrice').value = car.pricePerDay;
+                    document.getElementById('carImage').value = car.image;
+                    document.getElementById('carStatus').value = car.status;
+                    document.getElementById('carDescription').value = car.description;
+                    document.getElementById('carFeatures').value = (car.features || []).join(', ');
+                }
+            }
+        }
+
+        document.getElementById('carForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('carId').value;
+            const carData = {
+                name: document.getElementById('carName').value,
+                brand: document.getElementById('carBrand').value,
+                type: document.getElementById('carType').value,
+                carNumber: document.getElementById('carNumber').value,
+                pricePerDay: document.getElementById('carPrice').value,
+                image: document.getElementById('carImage').value,
+                status: document.getElementById('carStatus').value,
+                description: document.getElementById('carDescription').value,
+                features: document.getElementById('carFeatures').value.split(',').map(f => f.trim()).filter(f => f)
+            };
+
+            try {
+                const url = id ? `/api/cars/${id}` : '/api/cars';
+                await authFetch(url, {
+                    method: id ? 'PUT' : 'POST',
+                    body: JSON.stringify(carData)
+                });
+                bootstrap.Modal.getInstance(document.getElementById('carModal')).hide();
+                Swal.fire('Saved!', 'Car information has been updated.', 'success');
+                loadCars();
+            } catch (err) {
+                Swal.fire('Error', err.message, 'error');
+            }
+        });
+
+        async function deleteCar(id) {
+            const result = await Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete it!'
+            });
+
+            if (result.isConfirmed) {
+                try {
+                    await authFetch(`/api/cars/${id}`, { method: 'DELETE' });
+                    Swal.fire('Deleted!', 'Car has been removed.', 'success');
+                    loadCars();
+                } catch (err) {
+                    Swal.fire('Error', err.message, 'error');
+                }
+            }
+        }
+
+    </script>
+</body>
+
+</html>
